@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#3C4630">
+<meta name="description" content="Sandaran — tempat ternyaman dan tenang di perut. Pesan Kopasus, Lupy, dan paket bundling langsung dari sini.">
+
+<!-- PWA / installable app -->
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Sandaran">
+<meta name="mobile-web-app-capable" content="yes">
+
+<title>Sandaran — Tempat Ternyaman dan Tenang di Perut</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ===== decorative root sprigs (fixed, ambient) ===== -->
+<div class="ambient-leaf ambient-leaf--1" aria-hidden="true">🌿</div>
+<div class="ambient-leaf ambient-leaf--2" aria-hidden="true">🌿</div>
+
+<!-- ===== HEADER ===== -->
+<header class="site-header" id="siteHeader">
+  <div class="header-inner">
+    <a href="#top" class="brand">
+      <span class="brand-mark">
+        <svg viewBox="0 0 100 100" class="brand-mark-svg" aria-hidden="true">
+          <path d="M50 6 A44 44 0 0 1 92 62" fill="none"/>
+          <path d="M8 62 A44 44 0 0 1 46 6.3" fill="none"/>
+        </svg>
+        <span class="brand-mark-initial">S</span>
+      </span>
+      <span class="brand-word">Sandaran</span>
+    </a>
+
+    <nav class="main-nav" aria-label="Navigasi utama">
+      <a href="#menu">Menu</a>
+      <a href="#bundling">Paket Bundling</a>
+      <a href="#kisah">Kisah Kami</a>
+    </nav>
+
+    <div class="header-actions">
+      <button class="icon-btn" id="installBtn" aria-label="Instal aplikasi Sandaran" hidden>
+        <svg viewBox="0 0 24 24" class="icon-btn-svg" aria-hidden="true">
+          <path d="M12 3v12m0 0l-4.5-4.5M12 15l4.5-4.5M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <button class="icon-btn" id="ordersToggle" aria-label="Lihat riwayat pesanan">
+        <svg viewBox="0 0 24 24" class="icon-btn-svg" aria-hidden="true">
+          <path d="M6 2h12v20l-3-2-3 2-3-2-3 2V2z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+          <path d="M8.5 8h7M8.5 11.5h7M8.5 15h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <button class="cart-btn" id="cartToggle" aria-label="Buka keranjang">
+        <svg viewBox="0 0 24 24" class="cart-icon" aria-hidden="true">
+          <path d="M3 3h2l.4 2M7 13h11l3-8H5.4M7 13L5.4 5M7 13l-1.6 4H18M9 20a1.2 1.2 0 100-2.4A1.2 1.2 0 009 20zM18 20a1.2 1.2 0 100-2.4a1.2 1.2 0 000 2.4z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="cart-count" id="cartCount">0</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- ===== HERO ===== -->
+  <section class="hero" id="hero">
+    <div class="hero-inner">
+      <p class="hero-eyebrow reveal">— Kopi &amp; Camilan Rumahan —</p>
+      <div class="hero-badge reveal">
+        <img src="assets/logo.jpg" alt="Logo Sandaran: seseorang bersandar tenang pada pohon" class="hero-badge-img">
+      </div>
+      <h1 class="hero-title reveal">Tempat ternyaman<br> dan tenang di perut.</h1>
+      <p class="hero-sub reveal">Setiap tegukan Kopasus dan setiap gigitan Lupy dibuat pelan-pelan,
+        seperti mencari sandaran setelah hari yang panjang.</p>
+      <div class="hero-cta reveal">
+        <a href="#menu" class="btn btn--primary">Lihat Menu</a>
+        <a href="#bundling" class="btn btn--ghost">Paket Bundling</a>
+      </div>
+    </div>
+    <div class="hero-steam" aria-hidden="true">
+      <span></span><span></span><span></span>
+    </div>
+  </section>
+
+  <!-- ===== MENU ===== -->
+  <section class="section" id="menu">
+    <div class="section-head">
+      <p class="section-eyebrow">Menu Utama</p>
+      <h2 class="section-title">Pilih sandaranmu hari ini</h2>
+      <p class="section-desc">Dua racikan andalan — satu untuk diminum pelan-pelan, satu untuk dicamil sampai lupa waktu.</p>
+    </div>
+
+    <div class="product-grid" id="productGrid"></div>
+  </section>
+
+  <!-- ===== BUNDLING ===== -->
+  <section class="section section--alt" id="bundling">
+    <div class="section-head">
+      <p class="section-eyebrow">Paket Hemat</p>
+      <h2 class="section-title">Paket Bundling Sandaran</h2>
+      <p class="section-desc">1 Kopasus + 1 Lupy dalam satu paket, harganya lebih ringan daripada beli terpisah.</p>
+    </div>
+
+    <div class="bundle-card" id="bundleCard">
+      <div class="bundle-card-art">
+        <div class="bundle-orb">
+          <img src="assets/banner.jpg" alt="Paket bundling Sandaran berisi Kopasus dan Lupy">
+        </div>
+        <span class="bundle-tag">Hemat Rp 2.000</span>
+      </div>
+      <div class="bundle-card-body">
+        <h3>Paket Sandaran — Kopasus + Lupy</h3>
+        <p>Satu Kopasus dingin ditemani satu Lupy renyah — paket pas untuk teman rehat sore, dengan harga lebih bersahabat.</p>
+        <div class="bundle-price">
+          <span class="price-now" id="bundlePriceTag">Rp 8.000</span>
+          <span class="price-old">Rp 10.000</span>
+        </div>
+        <button class="btn btn--primary" id="openBundle">Tambah ke Keranjang</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== STORY / SIGNATURE ===== -->
+  <section class="section section--story" id="kisah">
+    <div class="story-inner">
+      <div class="story-badge">
+        <svg viewBox="0 0 100 100" aria-hidden="true">
+          <path d="M50 6 A44 44 0 0 1 92 62" fill="none"/>
+          <path d="M8 62 A44 44 0 0 1 46 6.3" fill="none"/>
+        </svg>
+        <img src="assets/logo.jpg" alt="">
+      </div>
+      <p class="story-eyebrow">Kisah Sandaran</p>
+      <h2 class="story-title">Kadang yang dicari bukan yang mewah,<br>tapi yang bikin tenang.</h2>
+      <p class="story-text">Sandaran lahir dari kebiasaan sederhana: menyeduh kopi susu sambil menunggu waktu istirahat,
+        dan menggulung lumpia renyah untuk teman ngobrol. Nama "Sandaran" kami pilih karena itulah yang ingin kami jadi —
+        tempat singgah yang nyaman, walau hanya lewat secangkir kopi dan camilan.</p>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <p>© <span id="year"></span> Sandaran. Dibuat dengan pelan-pelan, disajikan dengan hangat.</p>
+  </footer>
+</main>
+
+<!-- ===== PRODUCT MODAL ===== -->
+<div class="modal-overlay" id="productModalOverlay">
+  <div class="modal product-modal" id="productModal" role="dialog" aria-modal="true">
+    <button class="modal-close" id="productModalClose" aria-label="Tutup">×</button>
+    <div class="product-modal-media">
+      <img id="modalImg" src="" alt="">
+    </div>
+    <div class="product-modal-body">
+      <p class="product-modal-eyebrow" id="modalEyebrow"></p>
+      <h3 id="modalTitle"></h3>
+      <p class="product-modal-desc" id="modalDesc"></p>
+      <div class="product-modal-meta" id="modalMeta"></div>
+      <div class="qty-row">
+        <span>Jumlah</span>
+        <div class="stepper">
+          <button type="button" class="step-btn" id="qtyMinus" aria-label="Kurangi">−</button>
+          <span id="qtyValue">1</span>
+          <button type="button" class="step-btn" id="qtyPlus" aria-label="Tambah">+</button>
+        </div>
+      </div>
+      <div class="product-modal-footer">
+        <span class="modal-price" id="modalPrice"></span>
+        <button class="btn btn--primary" id="addToCartBtn">Masukkan Keranjang</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== BUNDLE MODAL ===== -->
+<div class="modal-overlay" id="bundleModalOverlay">
+  <div class="modal bundle-modal" role="dialog" aria-modal="true">
+    <button class="modal-close" id="bundleModalClose" aria-label="Tutup">×</button>
+    <p class="product-modal-eyebrow">Paket Bundling</p>
+    <h3>Paket Sandaran — Kopasus + Lupy</h3>
+    <p class="product-modal-desc">Satu paket berisi 1 Kopasus (250ml) dan 1 Lupy, harga lebih ringan daripada beli satuan.</p>
+
+    <div class="bundle-picker" id="bundlePicker"></div>
+
+    <div class="qty-row">
+      <span>Jumlah paket</span>
+      <div class="stepper">
+        <button type="button" class="step-btn" id="bundleQtyMinus" aria-label="Kurangi">−</button>
+        <span id="bundleQtyValue">1</span>
+        <button type="button" class="step-btn" id="bundleQtyPlus" aria-label="Tambah">+</button>
+      </div>
+    </div>
+    <div class="product-modal-footer">
+      <span class="modal-price" id="bundleModalPrice">Rp 8.000</span>
+      <button class="btn btn--primary" id="addBundleBtn">Masukkan Keranjang</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== CART DRAWER ===== -->
+<div class="drawer-overlay" id="cartOverlay"></div>
+<aside class="cart-drawer" id="cartDrawer" aria-label="Keranjang belanja">
+  <div class="cart-drawer-head">
+    <h3>Keranjangmu</h3>
+    <button class="modal-close" id="cartClose" aria-label="Tutup keranjang">×</button>
+  </div>
+
+  <div class="cart-items" id="cartItems">
+    <div class="cart-empty" id="cartEmpty">
+      <p>🍃</p>
+      <p>Keranjangmu masih kosong.<br>Yuk cari sandaranmu di menu.</p>
+    </div>
+  </div>
+
+  <div class="cart-drawer-foot" id="cartFoot">
+    <div class="cart-total-row">
+      <span>Total</span>
+      <strong id="cartTotal">Rp 0</strong>
+    </div>
+    <button class="btn btn--primary btn--block" id="goCheckout">Lanjut ke Pembayaran</button>
+  </div>
+</aside>
+
+<!-- ===== CHECKOUT VIEW ===== -->
+<div class="page-overlay" id="checkoutView">
+  <div class="page-overlay-inner">
+    <button class="back-link" id="backToShop">← Kembali berbelanja</button>
+    <div class="checkout-grid">
+      <div class="checkout-form-wrap">
+        <p class="section-eyebrow">Langkah terakhir</p>
+        <h2 class="section-title">Selesaikan Pesanan</h2>
+
+        <form id="checkoutForm" class="checkout-form">
+          <label>Nama Penerima
+            <input type="text" name="name" required placeholder="Nama lengkap">
+          </label>
+          <label>Nomor WhatsApp
+            <input type="tel" name="phone" required placeholder="08xx xxxx xxxx">
+          </label>
+          <label>Alamat Pengiriman
+            <textarea name="address" required placeholder="Jalan, nomor rumah, kecamatan, kota"></textarea>
+          </label>
+          <label>Catatan (opsional)
+            <textarea name="note" placeholder="Contoh: tidak pedas, titip di satpam, dll."></textarea>
+          </label>
+
+          <fieldset class="pay-fieldset">
+            <legend>Metode Pembayaran</legend>
+            <label class="pay-option">
+              <input type="radio" name="payment" value="Transfer Bank" checked>
+              <span>Transfer Bank</span>
+            </label>
+            <label class="pay-option">
+              <input type="radio" name="payment" value="QRIS">
+              <span>QRIS</span>
+            </label>
+            <label class="pay-option">
+              <input type="radio" name="payment" value="Bayar di Tempat (COD)">
+              <span>Bayar di Tempat (COD)</span>
+            </label>
+          </fieldset>
+
+          <button type="submit" class="btn btn--primary btn--block">Buat Pesanan</button>
+        </form>
+      </div>
+
+      <div class="checkout-summary">
+        <h3>Ringkasan Pesanan</h3>
+        <div class="summary-items" id="summaryItems"></div>
+        <div class="summary-row">
+          <span>Subtotal</span>
+          <span id="summarySubtotal">Rp 0</span>
+        </div>
+        <div class="summary-row">
+          <span>Ongkos Kirim</span>
+          <span>Rp 0</span>
+        </div>
+        <div class="summary-row summary-row--total">
+          <span>Total</span>
+          <span id="summaryTotal">Rp 0</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SUCCESS VIEW ===== -->
+<div class="page-overlay" id="successView">
+  <div class="page-overlay-inner success-inner">
+    <div class="success-badge">
+      <svg viewBox="0 0 100 100" aria-hidden="true">
+        <path d="M50 6 A44 44 0 0 1 92 62" fill="none"/>
+        <path d="M8 62 A44 44 0 0 1 46 6.3" fill="none"/>
+      </svg>
+      <span>✓</span>
+    </div>
+    <p class="section-eyebrow">Terima kasih</p>
+    <h2 class="section-title">Pesananmu sudah kami terima</h2>
+    <p class="success-order-id">No. Pesanan: <strong id="orderId"></strong></p>
+    <p class="section-desc">Kami akan menghubungimu lewat WhatsApp untuk konfirmasi pembayaran <span id="successPayment"></span>.
+      Sambil menunggu, boleh duduk sebentar dan bersandar dulu.</p>
+    <button class="btn btn--primary" id="backToHomeBtn">Pesan Lagi</button>
+    <button class="btn btn--ghost" id="viewOrdersFromSuccess">Lihat Riwayat Pesanan</button>
+  </div>
+</div>
+
+<!-- ===== ORDER HISTORY VIEW ===== -->
+<div class="page-overlay" id="ordersView">
+  <div class="page-overlay-inner">
+    <button class="back-link" id="backFromOrders">← Kembali berbelanja</button>
+    <p class="section-eyebrow">Riwayat</p>
+    <h2 class="section-title">Pesanan Saya</h2>
+    <p class="section-desc" style="margin-bottom:2rem;">Semua pesanan yang pernah kamu buat lewat perangkat ini, terbaru di atas.</p>
+
+    <div class="orders-list" id="ordersList"></div>
+  </div>
+</div>
+
+<div class="toast-stack" id="toastStack"></div>
+
+<!-- ===== iOS INSTALL INSTRUCTIONS MODAL ===== -->
+<div class="modal-overlay" id="iosInstallOverlay">
+  <div class="modal ios-install-modal" role="dialog" aria-modal="true">
+    <button class="modal-close" id="iosInstallClose" aria-label="Tutup">×</button>
+    <p class="product-modal-eyebrow">Instal Aplikasi</p>
+    <h3>Tambahkan Sandaran ke Layar Utama</h3>
+    <ol class="ios-install-steps">
+      <li>Ketuk ikon <strong>Bagikan</strong> <span class="ios-share-icon">⬆️</span> di bar bawah Safari.</li>
+      <li>Gulir lalu pilih <strong>“Tambah ke Layar Utama”</strong>.</li>
+      <li>Ketuk <strong>“Tambah”</strong> di pojok kanan atas.</li>
+    </ol>
+    <p class="product-modal-desc">Setelah itu, ikon Sandaran akan muncul di layar utama HP-mu seperti aplikasi biasa.</p>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
