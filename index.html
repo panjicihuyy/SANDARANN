@@ -229,45 +229,68 @@
 </aside>
 
 <!-- ===== CHECKOUT VIEW ===== -->
-<div class="page-overlay" id="checkoutView">
-  <div class="page-overlay-inner">
+<div class="page-overlay page-overlay--checkout" id="checkoutView">
+  <div class="page-overlay-inner checkout-page-inner">
     <button class="back-link" id="backToShop">← Kembali berbelanja</button>
+
+    <div class="checkout-steps">
+      <div class="checkout-step is-done">
+        <span class="checkout-step-dot">✓</span>
+        <span class="checkout-step-label">Keranjang</span>
+      </div>
+      <span class="checkout-step-line"></span>
+      <div class="checkout-step is-active">
+        <span class="checkout-step-dot">2</span>
+        <span class="checkout-step-label">Data Pesanan</span>
+      </div>
+      <span class="checkout-step-line"></span>
+      <div class="checkout-step">
+        <span class="checkout-step-dot">3</span>
+        <span class="checkout-step-label">Selesai</span>
+      </div>
+    </div>
+
     <div class="checkout-grid">
       <div class="checkout-form-wrap">
         <p class="section-eyebrow">Langkah terakhir</p>
-        <h2 class="section-title">Selesaikan Pesanan</h2>
+        <h2 class="section-title">Isi Data Penerima</h2>
+        <p class="checkout-form-hint">Setelah pesanan dibuat, admin Sandaran akan menghubungimu lewat
+          WhatsApp untuk konfirmasi &amp; atur pembayaran.</p>
 
         <form id="checkoutForm" class="checkout-form">
-          <label>Nama Penerima
+          <label>
+            <span class="checkout-label-text">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a4 4 0 100-8 4 4 0 000 8zM4 20c0-4 3.5-6 8-6s8 2 8 6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Nama Penerima
+            </span>
             <input type="text" name="name" required placeholder="Nama lengkap">
           </label>
-          <label>Nomor WhatsApp
+          <label>
+            <span class="checkout-label-text">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 2.5H7a2 2 0 00-2 2v15a2 2 0 002 2h10a2 2 0 002-2v-15a2 2 0 00-2-2zM11 18h2" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Nomor WhatsApp
+            </span>
             <input type="tel" name="phone" required placeholder="08xx xxxx xxxx">
           </label>
-          <label>Alamat Pengiriman
+          <label>
+            <span class="checkout-label-text">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6.5 7-11.5A7 7 0 105 9.5C5 14.5 12 21 12 21z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="9.5" r="2.2" fill="none" stroke="currentColor" stroke-width="1.7"/></svg>
+              Alamat Pengiriman
+            </span>
             <textarea name="address" required placeholder="Jalan, nomor rumah, kecamatan, kota"></textarea>
           </label>
-          <label>Catatan (opsional)
+          <label>
+            <span class="checkout-label-text">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+              Catatan <em>(opsional)</em>
+            </span>
             <textarea name="note" placeholder="Contoh: tidak pedas, titip di satpam, dll."></textarea>
           </label>
 
-          <fieldset class="pay-fieldset">
-            <legend>Metode Pembayaran</legend>
-            <label class="pay-option">
-              <input type="radio" name="payment" value="Transfer Bank" checked>
-              <span>Transfer Bank</span>
-            </label>
-            <label class="pay-option">
-              <input type="radio" name="payment" value="QRIS">
-              <span>QRIS</span>
-            </label>
-            <label class="pay-option">
-              <input type="radio" name="payment" value="Bayar di Tempat (COD)">
-              <span>Bayar di Tempat (COD)</span>
-            </label>
-          </fieldset>
-
-          <button type="submit" class="btn btn--primary btn--block">Buat Pesanan</button>
+          <button type="submit" class="btn btn--primary btn--block checkout-submit-btn">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Buat Pesanan
+          </button>
         </form>
       </div>
 
@@ -285,6 +308,10 @@
         <div class="summary-row summary-row--total">
           <span>Total</span>
           <span id="summaryTotal">Rp 0</span>
+        </div>
+        <div class="checkout-trust-note">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3.5v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9v-5L12 3z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>Pembayaran dikoordinasikan langsung lewat WhatsApp setelah pesanan dibuat — aman &amp; tanpa ribet.</span>
         </div>
       </div>
     </div>
@@ -304,10 +331,13 @@
     <p class="section-eyebrow">Terima kasih</p>
     <h2 class="section-title">Pesananmu sudah kami terima</h2>
     <p class="success-order-id">No. Pesanan: <strong id="orderId"></strong></p>
-    <p class="section-desc">Kami akan menghubungimu lewat WhatsApp untuk konfirmasi pembayaran <span id="successPayment"></span>.
+    <p class="section-desc">Admin kami akan menghubungimu lewat WhatsApp untuk konfirmasi &amp; atur pembayaran.
       Sambil menunggu, boleh duduk sebentar dan bersandar dulu.</p>
-    <button class="btn btn--primary" id="backToHomeBtn">Pesan Lagi</button>
-    <button class="btn btn--ghost" id="viewOrdersFromSuccess">Lihat Riwayat Pesanan</button>
+    <div class="success-actions">
+      <button class="btn btn--primary" id="backToHomeBtn">Pesan Lagi</button>
+      <button class="btn btn--ghost" id="printReceiptBtn">🖨️ Cetak Struk</button>
+    </div>
+    <button class="btn btn--text" id="viewOrdersFromSuccess">Lihat Riwayat Pesanan</button>
   </div>
 </div>
 
@@ -325,6 +355,66 @@
 
 <div class="toast-stack" id="toastStack"></div>
 
+<!-- ===== FLOATING CHATBOT WIDGET ===== -->
+<div class="chatbot" id="chatbot">
+  <button class="chatbot-fab" id="chatbotFab" aria-label="Buka chat Centt">
+    <svg viewBox="0 0 24 24" class="chatbot-fab-icon chatbot-fab-icon--chat" aria-hidden="true">
+      <path d="M4 4h16v12H8l-4 4V4z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+      <circle cx="8.5" cy="10" r="1" fill="currentColor" stroke="none"/>
+      <circle cx="12" cy="10" r="1" fill="currentColor" stroke="none"/>
+      <circle cx="15.5" cy="10" r="1" fill="currentColor" stroke="none"/>
+    </svg>
+    <svg viewBox="0 0 24 24" class="chatbot-fab-icon chatbot-fab-icon--close" aria-hidden="true">
+      <path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+    <span class="chatbot-fab-dot"></span>
+  </button>
+
+  <div class="chatbot-panel" id="chatbotPanel">
+    <div class="chatbot-header">
+      <div class="chatbot-header-avatar">
+        <img src="assets/logo.jpg" alt="">
+        <span class="chatbot-online-dot"></span>
+      </div>
+      <div class="chatbot-header-info">
+        <strong>Centt</strong>
+        <span id="chatbotStatusText">Online &middot; siap membantu</span>
+      </div>
+      <button class="chatbot-header-icon-btn" id="chatbotSoundToggle" title="Suara notifikasi" aria-label="Aktif/nonaktifkan suara notifikasi" aria-pressed="true">
+        <svg viewBox="0 0 24 24" class="icon-sound-on" aria-hidden="true"><path d="M4 9v6h4l5 5V4L8 9H4z" fill="currentColor"/><path d="M16.5 8.5a5 5 0 010 7M19 6a9 9 0 010 12" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+        <svg viewBox="0 0 24 24" class="icon-sound-off" aria-hidden="true"><path d="M4 9v6h4l5 5V4L8 9H4z" fill="currentColor"/><path d="M16 9l5 6M21 9l-5 6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+      </button>
+      <button class="chatbot-header-icon-btn" id="chatbotReset" title="Mulai obrolan baru" aria-label="Mulai obrolan baru">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4v5h5M20 20v-5h-5M5 9a8 8 0 0114-4M19 15a8 8 0 01-14 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <button class="chatbot-header-icon-btn chatbot-header-close" id="chatbotClose" aria-label="Tutup chat">×</button>
+    </div>
+
+    <div class="chatbot-body-wrap">
+      <div class="chatbot-body" id="chatbotBody"></div>
+      <button type="button" class="chat-scroll-bottom-btn" id="chatScrollBtn" aria-label="Gulir ke pesan terbaru">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="chat-scroll-bottom-badge" id="chatScrollBadge" hidden>0</span>
+      </button>
+    </div>
+
+    <div class="chatbot-chips" id="chatbotChips"></div>
+
+    <form class="chatbot-input-row" id="chatbotForm">
+      <button type="button" class="chatbot-mic-btn" id="chatbotMicBtn" aria-label="Rekam pesan suara" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15a3 3 0 003-3V6a3 3 0 00-6 0v6a3 3 0 003 3z" fill="currentColor"/><path d="M19 11a7 7 0 01-14 0M12 18v3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+      <div class="chatbot-input-wrap">
+        <input type="text" id="chatbotInput" placeholder="Tulis pesanmu di sini..." autocomplete="off" maxlength="300">
+        <span class="chatbot-char-counter" id="chatbotCharCounter" hidden>0/300</span>
+      </div>
+      <button type="submit" class="chatbot-send-btn" id="chatbotSendBtn" aria-label="Kirim pesan" disabled>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12l16-8-6 8 6 8-16-8z" fill="currentColor"/></svg>
+      </button>
+    </form>
+  </div>
+</div>
+
 <!-- ===== iOS INSTALL INSTRUCTIONS MODAL ===== -->
 <div class="modal-overlay" id="iosInstallOverlay">
   <div class="modal ios-install-modal" role="dialog" aria-modal="true">
@@ -339,6 +429,9 @@
     <p class="product-modal-desc">Setelah itu, ikon Sandaran akan muncul di layar utama HP-mu seperti aplikasi biasa.</p>
   </div>
 </div>
+
+<!-- ===== PRINTABLE RECEIPT (hidden on screen, shown only when printing) ===== -->
+<div id="receiptPrintArea" class="receipt-print"></div>
 
 <script src="script.js"></script>
 </body>
