@@ -1,4 +1,4 @@
-const CACHE_NAME = "sandaran-cache-v1";
+const CACHE_NAME = "sandaran-cache-v3";
 const CORE_ASSETS = [
   "./",
   "./index.html",
@@ -13,12 +13,21 @@ const CORE_ASSETS = [
   "./icons/icon-512.png",
   "./icons/apple-touch-icon.png"
 ];
+const EXTERNAL_ASSETS = [];
 
-// Install: pre-cache core app shell
+// Install: pre-cache app shell (core assets must succeed; external CDN
+// assets are best-effort so a CDN hiccup never breaks offline install)
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(CORE_ASSETS))
+      .then(async (cache) => {
+        await cache.addAll(CORE_ASSETS);
+        await Promise.all(
+          EXTERNAL_ASSETS.map((url) =>
+            cache.add(url).catch((err) => console.warn("Gagal cache aset eksternal:", url, err))
+          )
+        );
+      })
       .then(() => self.skipWaiting())
   );
 });
@@ -44,7 +53,7 @@ self.addEventListener("fetch", (event) => {
 
       return fetch(event.request)
         .then((response) => {
-          if (response && response.status === 200 && response.type === "basic") {
+          if (response && response.status === 200 && (response.type === "basic" || response.type === "cors")) {
             const clone = response.clone();
             caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
           }
