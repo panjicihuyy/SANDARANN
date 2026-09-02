@@ -22,53 +22,9 @@
 </head>
 <body>
 
-<!-- ===== SPLASH LOADER ===== -->
-<div class="sd-loader" id="sdLoader" aria-hidden="true">
-  <div class="sd-loader-mark">
-    <svg viewBox="0 0 100 100" aria-hidden="true">
-      <path d="M50 6 A44 44 0 0 1 92 62" fill="none" stroke="#F1EAD9" stroke-width="5" stroke-linecap="round"/>
-      <path d="M8 62 A44 44 0 0 1 46 6.3" fill="none" stroke="#F1EAD9" stroke-width="5" stroke-linecap="round"/>
-      <path d="M32 50 h30 l-3 22a6 6 0 01-6 5H41a6 6 0 01-6-5z" fill="#F1EAD9"/>
-      <path d="M62 54c8-2 12 4 9 10-2 4-6 5-10 4" fill="none" stroke="#F1EAD9" stroke-width="4" stroke-linecap="round"/>
-      <ellipse cx="47" cy="50" rx="15" ry="3.4" fill="#F1EAD9"/>
-    </svg>
-  </div>
-  <p class="sd-loader-text">Sandaran</p>
-</div>
-
-<!-- ===== SCROLL PROGRESS BAR ===== -->
-<div class="sd-progress" id="sdProgress" aria-hidden="true"><span id="sdProgressBar"></span></div>
-
-<!-- ===== PROMO TICKER ===== -->
-<div class="sd-promo" id="sdPromo">
-  <div class="sd-promo-inner">
-    <span>☕</span>
-    <span>Pesan paket bundling hari ini, hemat lebih banyak untuk sandaran sore-mu.</span>
-  </div>
-  <button class="sd-promo-close" id="sdPromoClose" aria-label="Tutup pengumuman">×</button>
-</div>
-
-<!-- ===== decorative root sprigs (fixed, ambient) — sekarang cangkir kopi ===== -->
-<div class="ambient-leaf ambient-leaf--1" aria-hidden="true">
-  <svg viewBox="0 0 100 100" aria-hidden="true">
-    <path d="M32 50 h30 l-3 22a6 6 0 01-6 5H41a6 6 0 01-6-5z" fill="currentColor"/>
-    <path d="M62 54c8-2 12 4 9 10-2 4-6 5-10 4" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
-    <ellipse cx="47" cy="50" rx="15" ry="3.4" fill="currentColor"/>
-    <g class="cup-steam" fill="none" stroke="#D98C4A" stroke-width="3" stroke-linecap="round">
-      <path d="M40 40c-3-4 3-6 0-11"/><path d="M48 38c-3-4 3-7 0-12"/><path d="M56 40c-3-4 3-6 0-11"/>
-    </g>
-  </svg>
-</div>
-<div class="ambient-leaf ambient-leaf--2" aria-hidden="true">
-  <svg viewBox="0 0 100 100" aria-hidden="true">
-    <path d="M32 50 h30 l-3 22a6 6 0 01-6 5H41a6 6 0 01-6-5z" fill="currentColor"/>
-    <path d="M62 54c8-2 12 4 9 10-2 4-6 5-10 4" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
-    <ellipse cx="47" cy="50" rx="15" ry="3.4" fill="currentColor"/>
-    <g class="cup-steam" fill="none" stroke="#D98C4A" stroke-width="3" stroke-linecap="round">
-      <path d="M40 40c-3-4 3-6 0-11"/><path d="M48 38c-3-4 3-7 0-12"/><path d="M56 40c-3-4 3-6 0-11"/>
-    </g>
-  </svg>
-</div>
+<!-- ===== decorative root sprigs (fixed, ambient) ===== -->
+<div class="ambient-leaf ambient-leaf--1" aria-hidden="true">🌿</div>
+<div class="ambient-leaf ambient-leaf--2" aria-hidden="true">🌿</div>
 
 <!-- ===== HEADER ===== -->
 <header class="site-header" id="siteHeader">
@@ -76,15 +32,10 @@
     <a href="#top" class="brand">
       <span class="brand-mark">
         <svg viewBox="0 0 100 100" class="brand-mark-svg" aria-hidden="true">
-          <path d="M50 6 A44 44 0 0 1 92 62" fill="none" stroke="#3C4630" stroke-width="5" stroke-linecap="round"/>
-          <path d="M8 62 A44 44 0 0 1 46 6.3" fill="none" stroke="#3C4630" stroke-width="5" stroke-linecap="round"/>
-          <path d="M32 50 h30 l-3 22a6 6 0 01-6 5H41a6 6 0 01-6-5z" fill="#3C4630"/>
-          <path d="M62 54c8-2 12 4 9 10-2 4-6 5-10 4" fill="none" stroke="#3C4630" stroke-width="4" stroke-linecap="round"/>
-          <ellipse cx="47" cy="50" rx="15" ry="3.4" fill="#3C4630"/>
-          <g fill="none" stroke="#D98C4A" stroke-width="3" stroke-linecap="round">
-            <path d="M40 40c-3-4 3-6 0-11"/><path d="M48 38c-3-4 3-7 0-12"/><path d="M56 40c-3-4 3-6 0-11"/>
-          </g>
+          <path d="M50 6 A44 44 0 0 1 92 62" fill="none"/>
+          <path d="M8 62 A44 44 0 0 1 46 6.3" fill="none"/>
         </svg>
+        <span class="brand-mark-initial">S</span>
       </span>
       <span class="brand-word">Sandaran</span>
     </a>
@@ -182,15 +133,10 @@
     <div class="story-inner">
       <div class="story-badge">
         <svg viewBox="0 0 100 100" aria-hidden="true">
-          <path d="M50 6 A44 44 0 0 1 92 62" fill="none" stroke="#3C4630" stroke-width="5" stroke-linecap="round"/>
-          <path d="M8 62 A44 44 0 0 1 46 6.3" fill="none" stroke="#3C4630" stroke-width="5" stroke-linecap="round"/>
-          <path d="M32 50 h30 l-3 22a6 6 0 01-6 5H41a6 6 0 01-6-5z" fill="#3C4630"/>
-          <path d="M62 54c8-2 12 4 9 10-2 4-6 5-10 4" fill="none" stroke="#3C4630" stroke-width="4" stroke-linecap="round"/>
-          <ellipse cx="47" cy="50" rx="15" ry="3.4" fill="#3C4630"/>
-          <g fill="none" stroke="#D98C4A" stroke-width="3" stroke-linecap="round">
-            <path d="M40 40c-3-4 3-6 0-11"/><path d="M48 38c-3-4 3-7 0-12"/><path d="M56 40c-3-4 3-6 0-11"/>
-          </g>
+          <path d="M50 6 A44 44 0 0 1 92 62" fill="none"/>
+          <path d="M8 62 A44 44 0 0 1 46 6.3" fill="none"/>
         </svg>
+        <img src="assets/logo.jpg" alt="">
       </div>
       <p class="story-eyebrow">Kisah Sandaran</p>
       <h2 class="story-title">Kadang yang dicari bukan yang mewah,<br>tapi yang bikin tenang.</h2>
@@ -486,11 +432,6 @@
 
 <!-- ===== PRINTABLE RECEIPT (hidden on screen, shown only when printing) ===== -->
 <div id="receiptPrintArea" class="receipt-print"></div>
-
-<!-- ===== BACK TO TOP ===== -->
-<button class="sd-top-btn" id="sdTopBtn" aria-label="Kembali ke atas">
-  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-</button>
 
 <script src="script.js"></script>
 </body>
