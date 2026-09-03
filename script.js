@@ -56,12 +56,25 @@ function showToast(msg){
 /* =========================================================
    Render product grid
    ========================================================= */
+const FAV_STORAGE_KEY = "sandaran_favorites";
+function loadFavorites(){
+  try{ return new Set(JSON.parse(localStorage.getItem(FAV_STORAGE_KEY)) || []); }
+  catch(err){ return new Set(); }
+}
+function saveFavorites(set){
+  try{ localStorage.setItem(FAV_STORAGE_KEY, JSON.stringify([...set])); }catch(err){ /* ignore */ }
+}
+let favorites = loadFavorites();
+
 function renderProducts(){
   const grid = $("#productGrid");
   grid.innerHTML = PRODUCTS.map(p => `
     <article class="product-card fade-up" data-id="${p.id}" tabindex="0">
       <div class="product-card-media">
         <span class="product-card-badge">${p.badge}</span>
+        <button type="button" class="product-card-fav${favorites.has(p.id) ? " is-fav" : ""}" data-fav="${p.id}" aria-label="Tandai ${p.name} sebagai favorit">
+          <svg viewBox="0 0 24 24" fill="${favorites.has(p.id) ? "currentColor" : "none"}" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 20s-7.5-4.7-10-9.3C.4 7 2 3.5 5.5 3c2-.3 3.7.7 6.5 3.4C14.8 3.7 16.5 2.7 18.5 3c3.5.5 5.1 4 3.5 7.7C19.5 15.3 12 20 12 20z"/></svg>
+        </button>
         <img src="${p.img}" alt="${p.name} - ${p.tagline}" loading="lazy">
       </div>
       <h3>${p.name}</h3>
@@ -77,6 +90,7 @@ function renderProducts(){
   grid.querySelectorAll(".product-card").forEach(card => {
     card.addEventListener("click", (e) => {
       if(e.target.closest("[data-add]")) return; // quick-add handled separately
+      if(e.target.closest("[data-fav]")) return;  // favorite toggle handled separately
       openProductModal(card.dataset.id);
     });
     card.addEventListener("keypress", (e) => { if(e.key === "Enter") openProductModal(card.dataset.id); });
@@ -89,7 +103,29 @@ function renderProducts(){
     });
   });
 
+  grid.querySelectorAll("[data-fav]").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      toggleFavorite(btn.dataset.fav, btn);
+    });
+  });
+
   observeFadeUps();
+}
+
+function toggleFavorite(id, btnEl){
+  const p = PRODUCTS.find(x => x.id === id);
+  if(favorites.has(id)){
+    favorites.delete(id);
+    btnEl.classList.remove("is-fav");
+    btnEl.querySelector("svg").setAttribute("fill", "none");
+  } else {
+    favorites.add(id);
+    btnEl.classList.add("is-fav");
+    btnEl.querySelector("svg").setAttribute("fill", "currentColor");
+    if(p) showToast(`${p.name} ditambahkan ke favorit ❤`);
+  }
+  saveFavorites(favorites);
 }
 
 function quickAdd(id, btnEl){
@@ -408,6 +444,7 @@ function finalizeOrder(order){
   closeCheckout();
   $("#successView").classList.add("active");
   document.body.style.overflow = "hidden";
+  spawnConfetti();
 
   // reset state for next order
   cart = [];
@@ -1111,6 +1148,151 @@ function showChatbotWidget(){
 $("#chatbotFab").addEventListener("click", toggleChatbot);
 $("#chatbotClose").addEventListener("click", closeChatbot);
 chatRenderChips();
+
+/* =========================================================
+   Chatbot proactive hint bubble
+   ========================================================= */
+const CHAT_HINT_SEEN_KEY = "sandaran_chat_hint_seen";
+function initChatHint(){
+  const hint = $("#chatbotHint");
+  const closeBtn = $("#chatbotHintClose");
+  if(!hint || !closeBtn) return;
+
+  let alreadySeen = false;
+  try{ alreadySeen = sessionStorage.getItem(CHAT_HINT_SEEN_KEY) === "1"; }catch(err){ /* ignore */ }
+  if(alreadySeen) return;
+
+  const dismiss = () => {
+    hint.classList.remove("show");
+    try{ sessionStorage.setItem(CHAT_HINT_SEEN_KEY, "1"); }catch(err){ /* ignore */ }
+  };
+
+  const showTimer = setTimeout(() => {
+    if(chatbotOpened || $("#chatbot").classList.contains("open")) return;
+    hint.classList.add("show");
+    setTimeout(dismiss, 8000);
+  }, 6000);
+
+  closeBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    clearTimeout(showTimer);
+    dismiss();
+  });
+  hint.addEventListener("click", () => {
+    dismiss();
+    openChatbot();
+    $("#chatbot").classList.remove("has-badge");
+  });
+  $("#chatbotFab").addEventListener("click", dismiss);
+}
+initChatHint();
+
+/* =========================================================
+   Top scroll progress bar
+   ========================================================= */
+function updateScrollProgress(){
+  const bar = $("#scrollProgress");
+  if(!bar) return;
+  const scrollTop = window.scrollY || document.documentElement.scrollTop;
+  const docHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+  const pct = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+  bar.style.width = Math.min(100, Math.max(0, pct)) + "%";
+}
+window.addEventListener("scroll", updateScrollProgress, { passive: true });
+window.addEventListener("resize", updateScrollProgress);
+updateScrollProgress();
+
+/* =========================================================
+   Ambient coffee cup — hide while product list is in view
+   ========================================================= */
+function initAmbientCoffeeVisibility(){
+  const menuSection = $("#menu");
+  const coffeeEls = $$(".ambient-coffee");
+  if(!menuSection || !coffeeEls.length) return;
+
+  if(!("IntersectionObserver" in window)){
+    return; // gracefully skip on very old browsers, ambient stays visible
+  }
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      coffeeEls.forEach(el => {
+        el.classList.toggle("is-hidden", entry.isIntersecting);
+      });
+    });
+  }, { threshold: 0.12 });
+
+  observer.observe(menuSection);
+}
+initAmbientCoffeeVisibility();
+
+/* =========================================================
+   Value strip — animated count-up numbers
+   ========================================================= */
+function animateCountUp(el){
+  const target = parseInt(el.dataset.countTo, 10);
+  if(Number.isNaN(target)){ return; }
+  if(target === 0){ el.textContent = "0"; return; }
+
+  const duration = 1100;
+  const start = performance.now();
+
+  function tick(now){
+    const progress = Math.min(1, (now - start) / duration);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    el.textContent = Math.round(eased * target).toLocaleString("id-ID");
+    if(progress < 1){
+      requestAnimationFrame(tick);
+    } else {
+      el.textContent = target.toLocaleString("id-ID");
+    }
+  }
+  requestAnimationFrame(tick);
+}
+
+function initValueStrip(){
+  const nums = $$(".value-num");
+  if(!nums.length || !("IntersectionObserver" in window)){
+    nums.forEach(el => { el.textContent = el.dataset.countTo || "0"; });
+    return;
+  }
+  const observer = new IntersectionObserver((entries, obs) => {
+    entries.forEach(entry => {
+      if(entry.isIntersecting){
+        nums.forEach(animateCountUp);
+        obs.disconnect();
+      }
+    });
+  }, { threshold: 0.35 });
+  const strip = document.querySelector(".value-strip");
+  if(strip) observer.observe(strip);
+}
+initValueStrip();
+
+/* =========================================================
+   Confetti burst on successful order
+   ========================================================= */
+function spawnConfetti(){
+  const layer = $("#confettiLayer");
+  if(!layer) return;
+  layer.innerHTML = "";
+  const pieces = ["☕", "🍃", "✨", "🤎"];
+  const total = 26;
+
+  for(let i = 0; i < total; i++){
+    const span = document.createElement("span");
+    span.className = "confetti-piece";
+    span.textContent = pieces[Math.floor(Math.random() * pieces.length)];
+    span.style.left = Math.random() * 100 + "%";
+    span.style.fontSize = (0.9 + Math.random() * 0.9) + "rem";
+    const duration = 2.6 + Math.random() * 1.8;
+    span.style.animationDuration = duration + "s";
+    span.style.animationDelay = (Math.random() * 0.6) + "s";
+    layer.appendChild(span);
+  }
+
+  setTimeout(() => { layer.innerHTML = ""; }, 5200);
+}
 
 /* =========================================================
    Init
