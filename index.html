@@ -22,20 +22,43 @@
 </head>
 <body>
 
-<!-- ===== decorative root sprigs (fixed, ambient) ===== -->
-<div class="ambient-leaf ambient-leaf--1" aria-hidden="true">🌿</div>
-<div class="ambient-leaf ambient-leaf--2" aria-hidden="true">🌿</div>
+<!-- ===== top scroll progress bar ===== -->
+<div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
+
+<!-- ===== decorative floating coffee cup (fixed, ambient) ===== -->
+<div class="ambient-coffee ambient-coffee--1" id="ambientCoffee1" aria-hidden="true">
+  <svg viewBox="0 0 64 64" class="ambient-coffee-svg">
+    <ellipse cx="32" cy="53" rx="21" ry="3.6" fill="none" stroke="currentColor" stroke-width="1.6"/>
+    <path d="M15 27h29l-2.8 21.5A4 4 0 0 1 37.3 52H23.7a4 4 0 0 1-3.9-3.5L15 27z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+    <path d="M8 27h43" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+    <path d="M43 30c6.5-1 9.5 3.8 7.6 8.4-1.8 4.5-7.4 5.6-10.2 4.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+    <g class="ambient-coffee-steam">
+      <path class="steam-path steam-path--1" d="M22 21c-3-3-1-5 0-7s1-4-1-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      <path class="steam-path steam-path--2" d="M30 21c-3-3-1-5 0-7s1-4-1-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      <path class="steam-path steam-path--3" d="M38 21c-3-3-1-5 0-7s1-4-1-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+    </g>
+  </svg>
+</div>
+<div class="ambient-coffee ambient-coffee--2" id="ambientCoffee2" aria-hidden="true">
+  <svg viewBox="0 0 64 64" class="ambient-coffee-svg">
+    <ellipse cx="32" cy="53" rx="21" ry="3.6" fill="none" stroke="currentColor" stroke-width="1.6"/>
+    <path d="M15 27h29l-2.8 21.5A4 4 0 0 1 37.3 52H23.7a4 4 0 0 1-3.9-3.5L15 27z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+    <path d="M8 27h43" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+    <path d="M43 30c6.5-1 9.5 3.8 7.6 8.4-1.8 4.5-7.4 5.6-10.2 4.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+    <g class="ambient-coffee-steam">
+      <path class="steam-path steam-path--1" d="M22 21c-3-3-1-5 0-7s1-4-1-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      <path class="steam-path steam-path--2" d="M30 21c-3-3-1-5 0-7s1-4-1-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      <path class="steam-path steam-path--3" d="M38 21c-3-3-1-5 0-7s1-4-1-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+    </g>
+  </svg>
+</div>
 
 <!-- ===== HEADER ===== -->
 <header class="site-header" id="siteHeader">
   <div class="header-inner">
     <a href="#top" class="brand">
       <span class="brand-mark">
-        <svg viewBox="0 0 100 100" class="brand-mark-svg" aria-hidden="true">
-          <path d="M50 6 A44 44 0 0 1 92 62" fill="none"/>
-          <path d="M8 62 A44 44 0 0 1 46 6.3" fill="none"/>
-        </svg>
-        <span class="brand-mark-initial">S</span>
+        <img src="assets/logo-mark.png" alt="Logo Sandaran" class="brand-mark-img" width="44" height="44">
       </span>
       <span class="brand-word">Sandaran</span>
     </a>
@@ -75,7 +98,7 @@
     <div class="hero-inner">
       <p class="hero-eyebrow reveal">— Kopi &amp; Camilan Rumahan —</p>
       <div class="hero-badge reveal">
-        <img src="assets/logo.jpg" alt="Logo Sandaran: seseorang bersandar tenang pada pohon" class="hero-badge-img">
+        <img src="assets/logo-badge.jpg" alt="Logo Sandaran: seseorang bersandar tenang pada pohon" class="hero-badge-img">
       </div>
       <h1 class="hero-title reveal">Tempat ternyaman<br> dan tenang di perut.</h1>
       <p class="hero-sub reveal">Setiap tegukan Kopasus dan setiap gigitan Lupy dibuat pelan-pelan,
@@ -87,6 +110,32 @@
     </div>
     <div class="hero-steam" aria-hidden="true">
       <span></span><span></span><span></span>
+    </div>
+  </section>
+
+  <!-- ===== VALUE STRIP ===== -->
+  <section class="value-strip fade-up" aria-label="Kenapa memilih Sandaran">
+    <div class="value-strip-inner">
+      <div class="value-item">
+        <svg class="value-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6.5 7-11.5A7 7 0 105 9.5C5 14.5 12 21 12 21z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 10.2l2 2 4-4.4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="value-num" data-count-to="100">0</span><span class="value-suffix">%</span>
+        <p>Racikan Rumahan</p>
+      </div>
+      <div class="value-item">
+        <svg class="value-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l3 3-3 3H6a2 2 0 010-4z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M6 3v18M6 9h9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <span class="value-num" data-count-to="2">0</span>
+        <p>Menu Favorit Andalan</p>
+      </div>
+      <div class="value-item">
+        <svg class="value-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 7v5l3.5 2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="value-num" data-count-to="3">0</span>
+        <p>Langkah Mudah Pesan</p>
+      </div>
+      <div class="value-item">
+        <svg class="value-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h13l3 5-3 5H4V4z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M4 14v6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <span class="value-prefix">Rp</span><span class="value-num" data-count-to="0">0</span>
+        <p>Ongkos Kirim di Struk</p>
+      </div>
     </div>
   </section>
 
@@ -136,7 +185,7 @@
           <path d="M50 6 A44 44 0 0 1 92 62" fill="none"/>
           <path d="M8 62 A44 44 0 0 1 46 6.3" fill="none"/>
         </svg>
-        <img src="assets/logo.jpg" alt="">
+        <img src="assets/logo-badge.jpg" alt="">
       </div>
       <p class="story-eyebrow">Kisah Sandaran</p>
       <h2 class="story-title">Kadang yang dicari bukan yang mewah,<br>tapi yang bikin tenang.</h2>
@@ -320,6 +369,7 @@
 
 <!-- ===== SUCCESS VIEW ===== -->
 <div class="page-overlay" id="successView">
+  <div class="confetti-layer" id="confettiLayer" aria-hidden="true"></div>
   <div class="page-overlay-inner success-inner">
     <div class="success-badge">
       <svg viewBox="0 0 100 100" aria-hidden="true">
@@ -357,7 +407,12 @@
 
 <!-- ===== FLOATING CHATBOT WIDGET ===== -->
 <div class="chatbot" id="chatbot">
+  <div class="chatbot-hint" id="chatbotHint" role="status">
+    <button type="button" class="chatbot-hint-close" id="chatbotHintClose" aria-label="Tutup saran">×</button>
+    <p>Bingung mau pesan apa? Tanya Centt aja 👋</p>
+  </div>
   <button class="chatbot-fab" id="chatbotFab" aria-label="Buka chat Centt">
+    <span class="chatbot-fab-ping" aria-hidden="true"></span>
     <svg viewBox="0 0 24 24" class="chatbot-fab-icon chatbot-fab-icon--chat" aria-hidden="true">
       <path d="M4 4h16v12H8l-4 4V4z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
       <circle cx="8.5" cy="10" r="1" fill="currentColor" stroke="none"/>
@@ -373,7 +428,7 @@
   <div class="chatbot-panel" id="chatbotPanel">
     <div class="chatbot-header">
       <div class="chatbot-header-avatar">
-        <img src="assets/logo.jpg" alt="">
+        <img src="assets/logo-badge.jpg" alt="">
         <span class="chatbot-online-dot"></span>
       </div>
       <div class="chatbot-header-info">
