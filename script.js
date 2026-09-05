@@ -56,24 +56,15 @@ function showToast(msg){
 /* =========================================================
    Render product grid
    ========================================================= */
-const FAV_STORAGE_KEY = "sandaran_favorites";
-function loadFavorites(){
-  try{ return new Set(JSON.parse(localStorage.getItem(FAV_STORAGE_KEY)) || []); }
-  catch(err){ return new Set(); }
-}
-function saveFavorites(set){
-  try{ localStorage.setItem(FAV_STORAGE_KEY, JSON.stringify([...set])); }catch(err){ /* ignore */ }
-}
-let favorites = loadFavorites();
-
 function renderProducts(){
   const grid = $("#productGrid");
+  const favorites = loadFavorites();
   grid.innerHTML = PRODUCTS.map(p => `
     <article class="product-card fade-up" data-id="${p.id}" tabindex="0">
       <div class="product-card-media">
         <span class="product-card-badge">${p.badge}</span>
-        <button type="button" class="product-card-fav${favorites.has(p.id) ? " is-fav" : ""}" data-fav="${p.id}" aria-label="Tandai ${p.name} sebagai favorit">
-          <svg viewBox="0 0 24 24" fill="${favorites.has(p.id) ? "currentColor" : "none"}" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 20s-7.5-4.7-10-9.3C.4 7 2 3.5 5.5 3c2-.3 3.7.7 6.5 3.4C14.8 3.7 16.5 2.7 18.5 3c3.5.5 5.1 4 3.5 7.7C19.5 15.3 12 20 12 20z"/></svg>
+        <button type="button" class="product-fav-btn ${favorites.includes(p.id) ? 'is-fav' : ''}" data-fav="${p.id}" aria-label="Tandai ${p.name} sebagai favorit">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-10-9.3C.4 7.8 2 4.5 5.4 4c2-.3 3.9.7 5 2.3C11.4 4.7 13.4 3.7 15.4 4c3.4.5 5 3.8 3.4 7.2-2.5 4.7-10 9.3-10 9.3z" fill="currentColor" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
         </button>
         <img src="${p.img}" alt="${p.name} - ${p.tagline}" loading="lazy">
       </div>
@@ -89,8 +80,7 @@ function renderProducts(){
 
   grid.querySelectorAll(".product-card").forEach(card => {
     card.addEventListener("click", (e) => {
-      if(e.target.closest("[data-add]")) return; // quick-add handled separately
-      if(e.target.closest("[data-fav]")) return;  // favorite toggle handled separately
+      if(e.target.closest("[data-add]") || e.target.closest("[data-fav]")) return;
       openProductModal(card.dataset.id);
     });
     card.addEventListener("keypress", (e) => { if(e.key === "Enter") openProductModal(card.dataset.id); });
@@ -113,19 +103,40 @@ function renderProducts(){
   observeFadeUps();
 }
 
+/* ---------- Wishlist / favorites ---------- */
+const FAVORITES_KEY = "sandaran_favorites";
+
+function loadFavorites(){
+  try{
+    const raw = localStorage.getItem(FAVORITES_KEY);
+    return raw ? JSON.parse(raw) : [];
+  }catch(err){
+    return [];
+  }
+}
+
+function saveFavorites(list){
+  try{ localStorage.setItem(FAVORITES_KEY, JSON.stringify(list)); }catch(err){ /* ignore */ }
+}
+
 function toggleFavorite(id, btnEl){
-  const p = PRODUCTS.find(x => x.id === id);
-  if(favorites.has(id)){
-    favorites.delete(id);
+  let favorites = loadFavorites();
+  const isFav = favorites.includes(id);
+
+  if(isFav){
+    favorites = favorites.filter(f => f !== id);
     btnEl.classList.remove("is-fav");
-    btnEl.querySelector("svg").setAttribute("fill", "none");
   } else {
-    favorites.add(id);
+    favorites.push(id);
     btnEl.classList.add("is-fav");
-    btnEl.querySelector("svg").setAttribute("fill", "currentColor");
-    if(p) showToast(`${p.name} ditambahkan ke favorit ❤`);
+    btnEl.classList.remove("pop");
+    void btnEl.offsetWidth;
+    btnEl.classList.add("pop");
   }
   saveFavorites(favorites);
+
+  const p = PRODUCTS.find(x => x.id === id);
+  if(p) showToast(isFav ? `${p.name} dihapus dari favorit` : `${p.name} ditambahkan ke favorit 💚`);
 }
 
 function quickAdd(id, btnEl){
@@ -374,6 +385,18 @@ $("#cartOverlay").addEventListener("click", closeCart);
 /* =========================================================
    Checkout view
    ========================================================= */
+const PROMO_CODES = {
+  "SANDARAN10": { type: "percent", value: 10 },
+  "HEMAT5000": { type: "flat", value: 5000 }
+};
+let appliedPromo = null;
+
+function calcDiscount(promo, subtotal){
+  if(!promo) return 0;
+  if(promo.type === "percent") return Math.round(subtotal * promo.value / 100);
+  return Math.min(promo.value, subtotal);
+}
+
 function renderCheckoutSummary(){
   const wrap = $("#summaryItems");
   wrap.innerHTML = cart.map(c => `
@@ -387,9 +410,63 @@ function renderCheckoutSummary(){
     </div>
   `).join("") || `<p style="color:var(--forest-soft); font-size:.88rem;">Belum ada produk dipilih.</p>`;
 
-  $("#summarySubtotal").textContent = rupiah(cartTotal());
-  $("#summaryTotal").textContent = rupiah(cartTotal());
+  const subtotal = cartTotal();
+  const discount = calcDiscount(appliedPromo, subtotal);
+  const total = Math.max(0, subtotal - discount);
+
+  $("#summarySubtotal").textContent = rupiah(subtotal);
+  $("#summaryTotal").textContent = rupiah(total);
+
+  const discountRow = $("#summaryDiscountRow");
+  if(discount > 0 && appliedPromo){
+    discountRow.hidden = false;
+    $("#summaryDiscount").textContent = "-" + rupiah(discount);
+    $("#promoCodeLabel").textContent = appliedPromo.code;
+  } else {
+    discountRow.hidden = true;
+  }
 }
+
+function applyPromoCode(){
+  const input = $("#promoInput");
+  const feedback = $("#promoFeedback");
+  const code = input.value.trim().toUpperCase();
+
+  if(!code){
+    feedback.hidden = false;
+    feedback.className = "promo-feedback error";
+    feedback.textContent = "Masukkan kode promo dulu ya";
+    return;
+  }
+
+  const promo = PROMO_CODES[code];
+  if(!promo){
+    appliedPromo = null;
+    feedback.hidden = false;
+    feedback.className = "promo-feedback error";
+    feedback.textContent = "Kode promo tidak ditemukan";
+    renderCheckoutSummary();
+    renderCashQuickChips();
+    updateCashCalc();
+    return;
+  }
+
+  appliedPromo = { code, type: promo.type, value: promo.value };
+  feedback.hidden = false;
+  feedback.className = "promo-feedback success";
+  feedback.textContent = promo.type === "percent"
+    ? `Kode ${code} berhasil dipakai! Diskon ${promo.value}% 🎉`
+    : `Kode ${code} berhasil dipakai! Diskon ${rupiah(promo.value)} 🎉`;
+  renderCheckoutSummary();
+  renderCashQuickChips();
+  updateCashCalc();
+  showToast("Promo berhasil diterapkan");
+}
+
+$("#promoApplyBtn").addEventListener("click", applyPromoCode);
+$("#promoInput").addEventListener("keydown", (e) => {
+  if(e.key === "Enter"){ e.preventDefault(); applyPromoCode(); }
+});
 
 function goToCheckout(){
   if(cart.length === 0){
@@ -398,6 +475,8 @@ function goToCheckout(){
   }
   closeCart();
   renderCheckoutSummary();
+  renderCashQuickChips();
+  updateCashCalc();
   $("#checkoutView").classList.add("active");
   document.body.style.overflow = "hidden";
   hideChatbotWidget();
@@ -413,11 +492,83 @@ $("#backToShop").addEventListener("click", () => {
   showChatbotWidget();
 });
 
+/* ---------- Cash payment & change calculator ---------- */
+function getCheckoutTotal(){
+  const subtotal = cartTotal();
+  const discount = calcDiscount(appliedPromo, subtotal);
+  return Math.max(0, subtotal - discount);
+}
+
+function renderCashQuickChips(){
+  const wrap = $("#cashQuickChips");
+  const total = getCheckoutTotal();
+  if(total <= 0){ wrap.innerHTML = ""; return; }
+
+  const roundTo = (val, step) => Math.ceil(val / step) * step;
+  const suggestions = new Set([
+    roundTo(total, 5000),
+    roundTo(total, 10000),
+    roundTo(total, 50000),
+    roundTo(total, 100000)
+  ]);
+  const list = [...suggestions].filter(v => v >= total).sort((a, b) => a - b).slice(0, 4);
+
+  wrap.innerHTML = list.map(v => `<button type="button" class="cash-chip" data-amount="${v}">${rupiah(v)}</button>`).join("");
+  wrap.querySelectorAll(".cash-chip").forEach(btn => {
+    btn.addEventListener("click", () => {
+      $("#cashGivenInput").value = btn.dataset.amount;
+      updateCashCalc();
+    });
+  });
+}
+
+function updateCashCalc(){
+  const total = getCheckoutTotal();
+  const input = $("#cashGivenInput");
+  const result = $("#cashCalcResult");
+  const given = parseInt(input.value, 10);
+
+  if(!input.value || isNaN(given) || given <= 0){
+    result.hidden = true;
+    return;
+  }
+
+  result.hidden = false;
+  if(given < total){
+    const shortfall = total - given;
+    result.className = "cash-calc-result cash-calc-result--short";
+    result.innerHTML = `😅 Kurang <strong>${rupiah(shortfall)}</strong> dari total pesanan`;
+  } else {
+    const change = given - total;
+    result.className = "cash-calc-result cash-calc-result--ok";
+    result.innerHTML = change > 0
+      ? `💵 Kembalian: <strong>${rupiah(change)}</strong>`
+      : `👍 Uang pas, tidak ada kembalian`;
+  }
+}
+
+$("#cashGivenInput").addEventListener("input", updateCashCalc);
+
 const checkoutFormEl = $("#checkoutForm");
+let lastCompletedOrder = null;
 
 checkoutFormEl.addEventListener("submit", (e) => {
   e.preventDefault();
   const formData = new FormData(e.target);
+
+  const subtotal = cartTotal();
+  const discount = calcDiscount(appliedPromo, subtotal);
+  const total = Math.max(0, subtotal - discount);
+
+  const cashGivenRaw = $("#cashGivenInput").value;
+  const cashGiven = cashGivenRaw ? parseInt(cashGivenRaw, 10) : null;
+
+  if(cashGiven !== null && !isNaN(cashGiven) && cashGiven > 0 && cashGiven < total){
+    showToast(`Uang tunai kurang ${rupiah(total - cashGiven)} dari total`);
+    $("#cashGivenInput").focus();
+    return;
+  }
+  const change = (cashGiven !== null && !isNaN(cashGiven) && cashGiven > 0) ? Math.max(0, cashGiven - total) : null;
 
   const order = {
     id: "SND-" + Date.now().toString().slice(-6),
@@ -430,27 +581,169 @@ checkoutFormEl.addEventListener("submit", (e) => {
       note: formData.get("note") || ""
     },
     items: cart.map(c => ({ name: c.name, sub: c.sub, qty: c.qty, price: c.price, img: c.img })),
-    total: cartTotal()
+    subtotal: subtotal,
+    discount: discount,
+    promoCode: appliedPromo ? appliedPromo.code : null,
+    cashGiven: cashGiven,
+    change: change,
+    total: total
   };
 
   finalizeOrder(order);
 });
+
+/* ---------- Loyalty points ---------- */
+const LOYALTY_KEY = "sandaran_loyalty_points";
+
+function loadLoyaltyPoints(){
+  try{ return parseInt(localStorage.getItem(LOYALTY_KEY) || "0", 10) || 0; }
+  catch(err){ return 0; }
+}
+function addLoyaltyPoints(pts){
+  const next = loadLoyaltyPoints() + pts;
+  try{ localStorage.setItem(LOYALTY_KEY, String(next)); }catch(err){ /* ignore */ }
+  return next;
+}
+
+/* ---------- Confetti burst (pure canvas, no external library) ---------- */
+function launchConfetti(){
+  try{
+    const canvas = $("#confettiCanvas");
+    if(!canvas || !canvas.getContext) return;
+    const ctx = canvas.getContext("2d");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    canvas.classList.add("show");
+
+    const colors = ["#3C4630", "#A85C2E", "#D98C4A", "#F1EAD9", "#6fbf73"];
+    const pieces = [];
+    for(let i = 0; i < 90; i++){
+      pieces.push({
+        x: canvas.width / 2,
+        y: canvas.height * 0.32,
+        vx: (Math.random() - 0.5) * 15,
+        vy: (Math.random() - 1.7) * 13,
+        size: 5 + Math.random() * 5,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        rotation: Math.random() * 360,
+        rotSpeed: (Math.random() - 0.5) * 14,
+        shape: Math.random() > 0.5 ? "rect" : "circle"
+      });
+    }
+
+    let frame = 0;
+    const maxFrames = 130;
+
+    function tick(){
+      frame++;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      pieces.forEach(p => {
+        p.vy += 0.045;
+        p.x += p.vx;
+        p.y += p.vy;
+        p.rotation += p.rotSpeed;
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rotation * Math.PI / 180);
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = Math.max(0, 1 - frame / maxFrames);
+        if(p.shape === "rect"){
+          ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.6);
+        } else {
+          ctx.beginPath();
+          ctx.arc(0, 0, p.size / 2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+      });
+
+      if(frame < maxFrames){
+        requestAnimationFrame(tick);
+      } else {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        canvas.classList.remove("show");
+      }
+    }
+    tick();
+  } catch(err){
+    /* confetti is purely decorative — never let it break checkout */
+  }
+}
 
 function finalizeOrder(order){
   saveOrder(order);
   $("#orderId").textContent = order.id;
   $("#receiptPrintArea").innerHTML = buildReceiptHTML(order);
 
+  if(order.cashGiven !== null && order.cashGiven !== undefined){
+    $("#cashChangeCard").hidden = false;
+    $("#cashChangeTotalDisplay").textContent = rupiah(order.total);
+    $("#cashChangeGivenDisplay").textContent = rupiah(order.cashGiven);
+    $("#cashChangeAmountDisplay").textContent = rupiah(order.change);
+  } else {
+    $("#cashChangeCard").hidden = true;
+  }
+
+  const earned = Math.floor(order.total / 1000);
+  const totalPoints = addLoyaltyPoints(earned);
+  $("#loyaltyEarned").textContent = `+${earned} Poin`;
+  $("#loyaltyTotal").textContent = `Total: ${totalPoints}`;
+
+  $$(".order-timeline-step").forEach((el, i) => {
+    el.classList.toggle("is-active", i === 0);
+    el.classList.remove("is-done");
+  });
+
+  lastCompletedOrder = order;
+
   closeCheckout();
   $("#successView").classList.add("active");
   document.body.style.overflow = "hidden";
-  spawnConfetti();
+  launchConfetti();
 
   // reset state for next order
   cart = [];
+  appliedPromo = null;
+  $("#promoInput").value = "";
+  $("#promoFeedback").hidden = true;
+  $("#cashGivenInput").value = "";
+  $("#cashCalcResult").hidden = true;
   renderCart();
   checkoutFormEl.reset();
 }
+
+$("#copyOrderIdBtn").addEventListener("click", async () => {
+  const id = $("#orderId").textContent;
+  if(!id) return;
+  try{
+    await navigator.clipboard.writeText(id);
+    showToast("Nomor pesanan disalin 📋");
+  }catch(err){
+    showToast("Tidak bisa menyalin otomatis, salin manual ya");
+  }
+});
+
+$("#shareWaBtn").addEventListener("click", () => {
+  if(!lastCompletedOrder) return;
+  const o = lastCompletedOrder;
+  const lines = [
+    "Halo Sandaran! Ini ringkasan pesanan saya:",
+    "",
+    `No. Pesanan: ${o.id}`,
+    ...o.items.map(it => `• ${it.name} x${it.qty} - ${rupiah(it.price * it.qty)}`),
+    "",
+    `Total: ${rupiah(o.total)}`
+  ];
+  if(o.cashGiven !== null && o.cashGiven !== undefined){
+    lines.push(
+      `Bayar tunai: ${rupiah(o.cashGiven)}`,
+      `Kembalian: ${rupiah(o.change)}`
+    );
+  }
+  lines.push("", "Mohon konfirmasi ya, terima kasih!");
+  const msg = encodeURIComponent(lines.join("\n"));
+  window.open(`https://wa.me/${WA_NUMBER}?text=${msg}`, "_blank", "noopener");
+});
 
 $("#backToHomeBtn").addEventListener("click", () => {
   $("#successView").classList.remove("active");
@@ -474,6 +767,17 @@ function buildReceiptHTML(order){
     </div>
   `).join("");
 
+  const discountHtml = order.discount > 0
+    ? `<div class="r-row"><span>Diskon ${order.promoCode ? "(" + order.promoCode + ")" : ""}</span><span>-${rupiah(order.discount)}</span></div>`
+    : "";
+
+  const cashHtml = (order.cashGiven !== null && order.cashGiven !== undefined)
+    ? `
+      <div class="r-row"><span>Bayar Tunai</span><span>${rupiah(order.cashGiven)}</span></div>
+      <div class="r-row"><span>Kembalian</span><span>${rupiah(order.change)}</span></div>
+    `
+    : "";
+
   return `
     <div class="receipt-doc">
       <div class="r-center r-brand">SANDARAN</div>
@@ -486,7 +790,10 @@ function buildReceiptHTML(order){
       <div class="r-divider"></div>
       ${itemsHtml}
       <div class="r-divider"></div>
+      ${order.subtotal ? `<div class="r-row"><span>Subtotal</span><span>${rupiah(order.subtotal)}</span></div>` : ""}
+      ${discountHtml}
       <div class="r-row r-total-row"><span>TOTAL</span><span>${rupiah(order.total)}</span></div>
+      ${cashHtml}
       <div class="r-divider"></div>
       <div class="r-center r-foot">Terima kasih sudah bersandar sejenak di Sandaran :)</div>
     </div>
@@ -558,7 +865,10 @@ function renderOrderHistory(){
         <span>${o.payment}</span>
         <strong>${rupiah(o.total)}</strong>
       </div>
-      <button type="button" class="btn--text order-print-btn" data-order-id="${o.id}">🖨️ Cetak Struk</button>
+      <div class="order-card-actions">
+        <button type="button" class="btn--text order-reorder-btn" data-order-id="${o.id}">🔁 Pesan Lagi</button>
+        <button type="button" class="btn--text order-print-btn" data-order-id="${o.id}">🖨️ Cetak Struk</button>
+      </div>
     </div>
   `).join("");
 
@@ -568,6 +878,28 @@ function renderOrderHistory(){
       if(!order) return;
       $("#receiptPrintArea").innerHTML = buildReceiptHTML(order);
       window.print();
+    });
+  });
+
+  wrap.querySelectorAll(".order-reorder-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const order = orders.find(o => o.id === btn.dataset.orderId);
+      if(!order) return;
+      order.items.forEach(it => {
+        addToCart({
+          key: it.name === "Paket Sandaran" ? "bundle" : (PRODUCTS.find(p => p.name === it.name)?.id || it.name),
+          id: it.name === "Paket Sandaran" ? "bundle" : (PRODUCTS.find(p => p.name === it.name)?.id || it.name),
+          name: it.name,
+          sub: it.sub,
+          price: it.price,
+          img: it.img || PRODUCTS.find(p => p.name === it.name)?.img || "assets/banner.jpg",
+          qty: it.qty
+        });
+      });
+      showToast(`${order.items.length} item dari ${order.id} ditambahkan ke keranjang 🔁`);
+      pulseCart();
+      closeOrdersView();
+      openCart();
     });
   });
 }
@@ -611,6 +943,62 @@ function observeFadeUps(){
     });
   }, { threshold: 0.15 });
   els.forEach(el => io.observe(el));
+}
+
+/* =========================================================
+   Ambient decoration — many small floating coffee cups in the
+   hero, generated with randomized position/size/motion for an
+   organic "flying" feel. Purely decorative (aria-hidden), and
+   physically confined inside .hero (overflow:hidden) so they can
+   never visually cover the product list below.
+   ========================================================= */
+const COFFEE_CUP_SVG = `
+  <svg viewBox="0 0 64 64" class="ambient-coffee-svg">
+    <ellipse cx="32" cy="53" rx="21" ry="3.5" fill="none" stroke="currentColor" stroke-width="1.6"/>
+    <path d="M13 28h30l-2.6 19a5 5 0 01-5 4.4H20.6a5 5 0 01-5-4.4L13 28z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+    <path d="M43 32a7.5 7.5 0 010 13" fill="none" stroke="currentColor" stroke-width="1.8"/>
+    <path class="steam steam-1" d="M23 24q-4-5 0-10t0-10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    <path class="steam steam-2" d="M33 24q-4-5 0-10t0-10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+  </svg>
+`;
+
+function renderAmbientCoffeeField(count){
+  const field = $("#ambientCoffeeField");
+  if(!field) return;
+
+  const rand = (min, max) => Math.random() * (max - min) + min;
+  let html = "";
+
+  for(let i = 0; i < count; i++){
+    const size = Math.round(rand(20, 46));
+    const cx = rand(2, 94);
+    const cy = rand(4, 88);
+    const dur = rand(6, 13).toFixed(1);
+    const delay = rand(0, 6).toFixed(1);
+    const dx = Math.round(rand(-26, 26));
+    const dy = Math.round(rand(-30, -12));
+    const rotA = Math.round(rand(-10, 10));
+    const rotB = Math.round(rand(-10, 10));
+    const op = rand(0.08, 0.22).toFixed(2);
+    const clayVariant = Math.random() > 0.7 ? "is-clay" : "";
+
+    const style = [
+      `--size:${size}px`,
+      `--cx:${cx}%`,
+      `--cy:${cy}%`,
+      `--dur:${dur}s`,
+      `--delay:${delay}s`,
+      `--dx:${dx}px`,
+      `--dy:${dy}px`,
+      `--rot-a:${rotA}deg`,
+      `--rot-b:${rotB}deg`,
+      `--op:${op}`
+    ].join(";");
+
+    html += `<div class="ambient-coffee-item ${clayVariant}" style="${style}">${COFFEE_CUP_SVG}</div>`;
+  }
+
+  field.innerHTML = html;
 }
 
 /* =========================================================
@@ -715,8 +1103,34 @@ function chatAppendMessageEl(role, html, timeLabel, opts){
   return row;
 }
 
+function chatAddReactionRow(row){
+  const group = row.querySelector(".chat-msg-group");
+  if(!group) return;
+  const wrap = document.createElement("div");
+  wrap.className = "chat-reactions";
+  wrap.innerHTML = `
+    <button type="button" class="chat-reaction-btn" data-reaction="up" aria-label="Balasan membantu">👍</button>
+    <button type="button" class="chat-reaction-btn" data-reaction="down" aria-label="Balasan kurang membantu">👎</button>
+  `;
+  group.appendChild(wrap);
+
+  wrap.querySelectorAll("[data-reaction]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      if(wrap.classList.contains("reacted")) return;
+      wrap.classList.add("reacted");
+      btn.classList.add("active", "pop");
+      if(btn.dataset.reaction === "up"){
+        showToast("Makasih atas masukannya! 💚");
+      } else {
+        showToast("Maaf kurang membantu — coba chat admin lewat WhatsApp ya 🙏");
+      }
+    });
+  });
+}
+
 function chatAddBot(html){
-  chatAppendMessageEl("bot", html, chatNowLabel());
+  const row = chatAppendMessageEl("bot", html, chatNowLabel());
+  chatAddReactionRow(row);
   chatPersist("bot", html);
   playChatSound("receive");
 }
@@ -817,14 +1231,16 @@ const CHAT_INTENTS = [
   { key: "delivery",emoji: "🛵", label: "Info Pengiriman",         showAsOption: false },
   { key: "location",emoji: "📍", label: "Lokasi Toko",             showAsOption: false },
   { key: "hours",   emoji: "🕒", label: "Jam Operasional",         showAsOption: false },
+  { key: "promo",   emoji: "🎁", label: "Kode Promo",              showAsOption: false },
+  { key: "poin",    emoji: "✨", label: "Poin Loyalitas",          showAsOption: false },
   { key: "thanks",  emoji: "🙏", label: "Terima Kasih",            showAsOption: false },
   { key: "greeting",emoji: "👋", label: "Halo",                    showAsOption: false }
 ];
 
 const CHAT_CHIPS = [
   { key: "menu",    label: "🛒 Menu & Harga" },
+  { key: "promo",   label: "🎁 Kode Promo" },
   { key: "howto",   label: "📦 Cara Pesan" },
-  { key: "payment", label: "💳 Metode Bayar" },
   { key: "wa",      label: "💬 Chat Admin" }
 ];
 
@@ -837,6 +1253,8 @@ function chatDetectIntent(rawText){
   if(chatHasWord(t,"terima","kasih","makasih","thanks","thank")) return "thanks";
   if(chatHasWord(t,"riwayat","history") || (chatHasWord(t,"pesanan") && chatHasWord(t,"saya"))) return "orders";
   if(chatHasWord(t,"whatsapp","wa","admin","cs","hubungi","kontak","min")) return "wa";
+  if(chatHasWord(t,"promo","diskon","voucher","kupon","kode")) return "promo";
+  if(chatHasWord(t,"poin","point","loyalitas","reward")) return "poin";
   if(chatHasWord(t,"transfer","cod","bayar","pembayaran","payment")) return "payment";
   if(chatHasWord(t,"ongkir","antar","kirim","delivery","pengiriman","diantar")) return "delivery";
   if(chatHasWord(t,"alamat","lokasi","dimana","toko")) return "location";
@@ -908,6 +1326,27 @@ function chatHandleIntent(intent){
       case "hours":
         chatAddBot("Jam operasional bisa berbeda tiap hari — biar pasti, konfirmasi langsung ke admin lewat WhatsApp ya 🙏");
         break;
+
+      case "promo":
+        chatAddBot(`
+          Ada kode promo yang bisa dipakai saat checkout, lho! 🎁
+          <ul>
+            <li><strong>SANDARAN10</strong> — diskon 10% dari total belanja</li>
+            <li><strong>HEMAT5000</strong> — potongan langsung Rp 5.000</li>
+          </ul>
+          Masukkan kodenya di kolom "Punya kode promo?" pada halaman pembayaran ya.
+        `);
+        break;
+
+      case "poin": {
+        const points = loadLoyaltyPoints();
+        chatAddBot(`
+          Setiap Rp 1.000 belanja = <strong>1 Poin Sandaran</strong> ✨ otomatis terkumpul tiap
+          selesai checkout, bisa dilihat di halaman "Terima kasih" setelah pesan.
+          <br><br>Poin kamu saat ini: <strong>${points} poin</strong> 🌿
+        `);
+        break;
+      }
 
       case "thanks":
         chatAddBot("Sama-sama! 🌿 Senang bisa bantu. Kalau butuh apa-apa lagi, aku ada di sini kapan saja.");
@@ -1091,11 +1530,12 @@ function chatBootstrapConversation(){
     chatbotOpened = true;
     chatHistoryCache = history;
     history.forEach(m => {
-      chatAppendMessageEl(
+      const row = chatAppendMessageEl(
         m.role, m.html,
         new Date(m.ts).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }),
         { instantRead: true }
       );
+      if(m.role === "bot") chatAddReactionRow(row);
     });
     chatJumpToBottom();
     return;
@@ -1150,151 +1590,6 @@ $("#chatbotClose").addEventListener("click", closeChatbot);
 chatRenderChips();
 
 /* =========================================================
-   Chatbot proactive hint bubble
-   ========================================================= */
-const CHAT_HINT_SEEN_KEY = "sandaran_chat_hint_seen";
-function initChatHint(){
-  const hint = $("#chatbotHint");
-  const closeBtn = $("#chatbotHintClose");
-  if(!hint || !closeBtn) return;
-
-  let alreadySeen = false;
-  try{ alreadySeen = sessionStorage.getItem(CHAT_HINT_SEEN_KEY) === "1"; }catch(err){ /* ignore */ }
-  if(alreadySeen) return;
-
-  const dismiss = () => {
-    hint.classList.remove("show");
-    try{ sessionStorage.setItem(CHAT_HINT_SEEN_KEY, "1"); }catch(err){ /* ignore */ }
-  };
-
-  const showTimer = setTimeout(() => {
-    if(chatbotOpened || $("#chatbot").classList.contains("open")) return;
-    hint.classList.add("show");
-    setTimeout(dismiss, 8000);
-  }, 6000);
-
-  closeBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    clearTimeout(showTimer);
-    dismiss();
-  });
-  hint.addEventListener("click", () => {
-    dismiss();
-    openChatbot();
-    $("#chatbot").classList.remove("has-badge");
-  });
-  $("#chatbotFab").addEventListener("click", dismiss);
-}
-initChatHint();
-
-/* =========================================================
-   Top scroll progress bar
-   ========================================================= */
-function updateScrollProgress(){
-  const bar = $("#scrollProgress");
-  if(!bar) return;
-  const scrollTop = window.scrollY || document.documentElement.scrollTop;
-  const docHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-  const pct = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
-  bar.style.width = Math.min(100, Math.max(0, pct)) + "%";
-}
-window.addEventListener("scroll", updateScrollProgress, { passive: true });
-window.addEventListener("resize", updateScrollProgress);
-updateScrollProgress();
-
-/* =========================================================
-   Ambient coffee cup — hide while product list is in view
-   ========================================================= */
-function initAmbientCoffeeVisibility(){
-  const menuSection = $("#menu");
-  const coffeeEls = $$(".ambient-coffee");
-  if(!menuSection || !coffeeEls.length) return;
-
-  if(!("IntersectionObserver" in window)){
-    return; // gracefully skip on very old browsers, ambient stays visible
-  }
-
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      coffeeEls.forEach(el => {
-        el.classList.toggle("is-hidden", entry.isIntersecting);
-      });
-    });
-  }, { threshold: 0.12 });
-
-  observer.observe(menuSection);
-}
-initAmbientCoffeeVisibility();
-
-/* =========================================================
-   Value strip — animated count-up numbers
-   ========================================================= */
-function animateCountUp(el){
-  const target = parseInt(el.dataset.countTo, 10);
-  if(Number.isNaN(target)){ return; }
-  if(target === 0){ el.textContent = "0"; return; }
-
-  const duration = 1100;
-  const start = performance.now();
-
-  function tick(now){
-    const progress = Math.min(1, (now - start) / duration);
-    const eased = 1 - Math.pow(1 - progress, 3);
-    el.textContent = Math.round(eased * target).toLocaleString("id-ID");
-    if(progress < 1){
-      requestAnimationFrame(tick);
-    } else {
-      el.textContent = target.toLocaleString("id-ID");
-    }
-  }
-  requestAnimationFrame(tick);
-}
-
-function initValueStrip(){
-  const nums = $$(".value-num");
-  if(!nums.length || !("IntersectionObserver" in window)){
-    nums.forEach(el => { el.textContent = el.dataset.countTo || "0"; });
-    return;
-  }
-  const observer = new IntersectionObserver((entries, obs) => {
-    entries.forEach(entry => {
-      if(entry.isIntersecting){
-        nums.forEach(animateCountUp);
-        obs.disconnect();
-      }
-    });
-  }, { threshold: 0.35 });
-  const strip = document.querySelector(".value-strip");
-  if(strip) observer.observe(strip);
-}
-initValueStrip();
-
-/* =========================================================
-   Confetti burst on successful order
-   ========================================================= */
-function spawnConfetti(){
-  const layer = $("#confettiLayer");
-  if(!layer) return;
-  layer.innerHTML = "";
-  const pieces = ["☕", "🍃", "✨", "🤎"];
-  const total = 26;
-
-  for(let i = 0; i < total; i++){
-    const span = document.createElement("span");
-    span.className = "confetti-piece";
-    span.textContent = pieces[Math.floor(Math.random() * pieces.length)];
-    span.style.left = Math.random() * 100 + "%";
-    span.style.fontSize = (0.9 + Math.random() * 0.9) + "rem";
-    const duration = 2.6 + Math.random() * 1.8;
-    span.style.animationDuration = duration + "s";
-    span.style.animationDelay = (Math.random() * 0.6) + "s";
-    layer.appendChild(span);
-  }
-
-  setTimeout(() => { layer.innerHTML = ""; }, 5200);
-}
-
-/* =========================================================
    Init
    ========================================================= */
 document.addEventListener("keydown", (e) => {
@@ -1310,11 +1605,70 @@ document.addEventListener("keydown", (e) => {
 
 $("#year").textContent = new Date().getFullYear();
 
+/* =========================================================
+   Dark mode
+   ========================================================= */
+const THEME_KEY = "sandaran_theme";
+
+function applyTheme(theme){
+  if(theme === "dark"){
+    document.documentElement.setAttribute("data-theme", "dark");
+    $("#darkModeToggle").title = "Mode terang";
+  } else {
+    document.documentElement.removeAttribute("data-theme");
+    $("#darkModeToggle").title = "Mode gelap";
+  }
+}
+
+function initTheme(){
+  let saved = null;
+  try{ saved = localStorage.getItem(THEME_KEY); }catch(err){ /* ignore */ }
+  if(saved){
+    applyTheme(saved);
+  } else {
+    const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    applyTheme(prefersDark ? "dark" : "light");
+  }
+}
+initTheme();
+
+/* =========================================================
+   Back-to-top button
+   ========================================================= */
+const backToTopBtn = $("#backToTopBtn");
+window.addEventListener("scroll", () => {
+  backToTopBtn.classList.toggle("show", window.scrollY > 480);
+}, { passive: true });
+backToTopBtn.addEventListener("click", () => {
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+
+/* =========================================================
+   FAQ accordion
+   ========================================================= */
+$$(".faq-question").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const item = btn.closest(".faq-item");
+    const wasOpen = item.classList.contains("open");
+    $$(".faq-item.open").forEach(el => el.classList.remove("open"));
+    if(!wasOpen) item.classList.add("open");
+  });
+});
+
+$("#darkModeToggle").addEventListener("click", () => {
+  const isDark = document.documentElement.getAttribute("data-theme") === "dark";
+  const next = isDark ? "light" : "dark";
+  applyTheme(next);
+  try{ localStorage.setItem(THEME_KEY, next); }catch(err){ /* ignore */ }
+  showToast(next === "dark" ? "Mode gelap aktif 🌙" : "Mode terang aktif ☀️");
+});
+
 renderProducts();
 renderCart();
 observeFadeUps();
 $$(".section-head, .bundle-card, .story-inner").forEach(el => el.classList.add("fade-up"));
 observeFadeUps();
+renderAmbientCoffeeField(14);
 
 // Give the chat bubble a subtle "new message" badge shortly after page load
 setTimeout(() => {
